@@ -1,14 +1,28 @@
+    <!-- <style> 
+    .home-link {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        text-decoration: none;
+        font-size: 18px;
+        font-weight: bold;
+        color: #000;
+    }
+    .home-link:hover {
+        color: #007BFF; /* Change color on hover */
+    }
+</style> -->
+<!-- <link rel="stylesheet" href="../index.html"> -->
+<!-- <a href="../index.html" class="home-link">Go to Home</a>  -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>2048 AI WebAPP</title>
     <link rel="stylesheet" href="../index.html">
- 
-    <h1 class="display-3 fw-bolder mb-5"><span class="text-gradient d-inline">Welcome to 2 0 4 8 mimicker!  <b></b><b></b>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2048 Game</title>
-    <style>
+    <title>Chill 2048</title>
+    <style> 
         .home-link {
             position: absolute;
             top: 10px;
@@ -22,16 +36,25 @@
             color: #007BFF; /* Change color on hover */
         }
     </style>
-
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Comic Sans MS', cursive, sans-serif;
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
             height: 100vh;
             margin: 0;
-            background-color: #faf8ef;
+            background: linear-gradient(to bottom, #89f7fe, #66a6ff);
+            color: #333;
+        }
+        .wrapper {
+            padding: 20px;
+            border: 8px solid;
+            border-image: url('https://www.toptal.com/designers/subtlepatterns/patterns/wave.png') 30;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 20px;
+            position: relative;
         }
         .grid {
             display: grid;
@@ -47,52 +70,74 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            background-color: #cdc1b4;
-            border-radius: 5px;
+            background: radial-gradient(circle, #8ecae6, #219ebc);
+            border-radius: 50%;
             font-size: 24px;
             font-weight: bold;
+            color: #ffffff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
         }
-        .cell[data-value="2"] { background-color: #eee4da; }
-        .cell[data-value="4"] { background-color: #ede0c8; }
-        .cell[data-value="8"] { background-color: #f2b179; color: #f9f6f2; }
-        .cell[data-value="16"] { background-color: #f59563; color: #f9f6f2; }
-        .cell[data-value="32"] { background-color: #f67c5f; color: #f9f6f2; }
-        .cell[data-value="64"] { background-color: #f65e3b; color: #f9f6f2; }
-        .cell[data-value="128"] { background-color: #edcf72; color: #f9f6f2; }
-        .cell[data-value="256"] { background-color: #edcc61; color: #f9f6f2; }
-        .cell[data-value="512"] { background-color: #edc850; color: #f9f6f2; }
-        .cell[data-value="1024"] { background-color: #edc53f; color: #f9f6f2; }
-        .cell[data-value="2048"] { background-color: #edc22e; color: #f9f6f2; }
-        .restart {
-            margin-top: 20px;
-            text-align: center;
+        .controls {
+            margin: 10px 0;
         }
-        .restart button {
-            font-size: 16px;
+        button {
             padding: 10px 20px;
-            background-color: #8f7a66;
-            color: #fff;
+            font-size: 16px;
             border: none;
             border-radius: 5px;
+            background: #4caf50;
+            color: white;
             cursor: pointer;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        .high-score {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid #333;
+            border-radius: 10px;
+            padding: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        .frog {
+            margin: 20px 0;
+            text-align: center;
+        }
+        .frog img {
+            width: 250px;
+            height: 175px;
         }
     </style>
 </head>
 <body>
-    <a href="../index.html" class="home-link">Go to Home</a>
-
-    <div>
+    <a href="../index.html" class="home-link">Go to Home</a> 
+    <div class="wrapper">
+        <h1>Chill 2048</h1>
+        <div class="frog">
+            <img width="400px" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTk7yWUmB1vccXHAaJeaSl2JtlfLPnwN7k3gQ&s" alt="Frog Icon">
+        </div>
+        <div class="controls">
+            <button onclick="restartGame()">Restart</button>
+        </div>
         <div class="grid" id="grid"></div>
-        <div class="restart" id="restart" style="display: none;">
-            <p>Game Over!</p>
-            <button onclick="restartGame()">Restart Game</button>
+        <div class="high-score">
+            <h2>High Scores</h2>
+            <ul id="high-score-list">
+            </ul>
         </div>
     </div>
 
     <script>
         const grid = document.getElementById('grid');
-        const restartDiv = document.getElementById('restart');
+        const highScoreList = document.getElementById('high-score-list');
+
         let board = Array(4).fill(null).map(() => Array(4).fill(0));
+        let score = 0;
+        let highScores = [];
 
         function createBoard() {
             grid.innerHTML = '';
@@ -137,6 +182,7 @@
             for (let i = 0; i < row.length - 1; i++) {
                 if (row[i] === row[i + 1] && row[i] !== 0) {
                     row[i] *= 2;
+                    score += row[i];
                     row[i + 1] = 0;
                 }
             }
@@ -179,11 +225,28 @@
         }
 
         function restartGame() {
+            saveHighScore();
+            score = 0;
             board = Array(4).fill(null).map(() => Array(4).fill(0));
             addRandomTile();
             addRandomTile();
             createBoard();
-            restartDiv.style.display = 'none';
+        }
+
+        function saveHighScore() {
+            highScores.push(score);
+            highScores.sort((a, b) => b - a);
+            highScores = highScores.slice(0, 5);
+            updateHighScoreList();
+        }
+
+        function updateHighScoreList() {
+            highScoreList.innerHTML = '';
+            highScores.forEach((highScore, index) => {
+                const li = document.createElement('li');
+                li.textContent = `#${index + 1}: ${highScore}`;
+                highScoreList.appendChild(li);
+            });
         }
 
         document.addEventListener('keydown', event => {
@@ -201,7 +264,8 @@
                     addRandomTile();
                     createBoard();
                     if (isGameOver()) {
-                        restartDiv.style.display = 'block';
+                        alert('Game Over!');
+                        saveHighScore();
                     }
                 }
             }
