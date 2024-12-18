@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>2048 AI WebAPP</title>
+    <link rel="stylesheet" href="../index.html">
+ 
+    <h1 class="display-3 fw-bolder mb-5"><span class="text-gradient d-inline">Welcome to 2 0 4 8 mimicker!  <b></b><b></b>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2048 Game</title>
+    <style>
+        .home-link {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            text-decoration: none;
+            font-size: 18px;
+            font-weight: bold;
+            color: #000;
+        }
+        .home-link:hover {
+            color: #007BFF; /* Change color on hover */
+        }
+    </style>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #faf8ef;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(4, 100px);
+            grid-gap: 10px;
+            background-color: #bbada0;
+            padding: 10px;
+            border-radius: 10px;
+        }
+        .cell {
+            width: 100px;
+            height: 100px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #cdc1b4;
+            border-radius: 5px;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .cell[data-value="2"] { background-color: #eee4da; }
+        .cell[data-value="4"] { background-color: #ede0c8; }
+        .cell[data-value="8"] { background-color: #f2b179; color: #f9f6f2; }
+        .cell[data-value="16"] { background-color: #f59563; color: #f9f6f2; }
+        .cell[data-value="32"] { background-color: #f67c5f; color: #f9f6f2; }
+        .cell[data-value="64"] { background-color: #f65e3b; color: #f9f6f2; }
+        .cell[data-value="128"] { background-color: #edcf72; color: #f9f6f2; }
+        .cell[data-value="256"] { background-color: #edcc61; color: #f9f6f2; }
+        .cell[data-value="512"] { background-color: #edc850; color: #f9f6f2; }
+        .cell[data-value="1024"] { background-color: #edc53f; color: #f9f6f2; }
+        .cell[data-value="2048"] { background-color: #edc22e; color: #f9f6f2; }
+        .restart {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .restart button {
+            font-size: 16px;
+            padding: 10px 20px;
+            background-color: #8f7a66;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <a href="../index.html" class="home-link">Go to Home</a>
+
+    <div>
+        <div class="grid" id="grid"></div>
+        <div class="restart" id="restart" style="display: none;">
+            <p>Game Over!</p>
+            <button onclick="restartGame()">Restart Game</button>
+        </div>
+    </div>
+
+    <script>
+        const grid = document.getElementById('grid');
+        const restartDiv = document.getElementById('restart');
+        let board = Array(4).fill(null).map(() => Array(4).fill(0));
+
+        function createBoard() {
+            grid.innerHTML = '';
+            board.forEach(row => {
+                row.forEach(value => {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    if (value > 0) {
+                        cell.textContent = value;
+                        cell.dataset.value = value;
+                    }
+                    grid.appendChild(cell);
+                });
+            });
+        }
+
+        function addRandomTile() {
+            const emptyCells = [];
+            board.forEach((row, rowIndex) => {
+                row.forEach((value, colIndex) => {
+                    if (value === 0) {
+                        emptyCells.push({ row: rowIndex, col: colIndex });
+                    }
+                });
+            });
+
+            if (emptyCells.length > 0) {
+                const { row, col } = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+                board[row][col] = Math.random() < 0.9 ? 2 : 4;
+            }
+        }
+
+        function slide(row) {
+            const filteredRow = row.filter(value => value !== 0);
+            while (filteredRow.length < 4) {
+                filteredRow.push(0);
+            }
+            return filteredRow;
+        }
+
+        function combine(row) {
+            for (let i = 0; i < row.length - 1; i++) {
+                if (row[i] === row[i + 1] && row[i] !== 0) {
+                    row[i] *= 2;
+                    row[i + 1] = 0;
+                }
+            }
+            return row;
+        }
+
+        function moveLeft() {
+            board = board.map(row => combine(slide(row)));
+        }
+
+        function moveRight() {
+            board = board.map(row => combine(slide(row.reverse())).reverse());
+        }
+
+        function moveUp() {
+            board = transpose(board);
+            moveLeft();
+            board = transpose(board);
+        }
+
+        function moveDown() {
+            board = transpose(board);
+            moveRight();
+            board = transpose(board);
+        }
+
+        function transpose(matrix) {
+            return matrix[0].map((_, colIndex) => matrix.map(row => row[colIndex]));
+        }
+
+        function isGameOver() {
+            for (let row = 0; row < 4; row++) {
+                for (let col = 0; col < 4; col++) {
+                    if (board[row][col] === 0) return false;
+                    if (col < 3 && board[row][col] === board[row][col + 1]) return false;
+                    if (row < 3 && board[row][col] === board[row + 1][col]) return false;
+                }
+            }
+            return true;
+        }
+
+        function restartGame() {
+            board = Array(4).fill(null).map(() => Array(4).fill(0));
+            addRandomTile();
+            addRandomTile();
+            createBoard();
+            restartDiv.style.display = 'none';
+        }
+
+        document.addEventListener('keydown', event => {
+            const keyMap = {
+                ArrowLeft: moveLeft,
+                ArrowRight: moveRight,
+                ArrowUp: moveUp,
+                ArrowDown: moveDown
+            };
+
+            if (keyMap[event.key]) {
+                const oldBoard = JSON.stringify(board);
+                keyMap[event.key]();
+                if (JSON.stringify(board) !== oldBoard) {
+                    addRandomTile();
+                    createBoard();
+                    if (isGameOver()) {
+                        restartDiv.style.display = 'block';
+                    }
+                }
+            }
+        });
+
+        addRandomTile();
+        addRandomTile();
+        createBoard();
+    </script>
+</body>
+</html>
